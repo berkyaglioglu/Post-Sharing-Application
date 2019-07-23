@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/global.css'%}" type="text/css">
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+<div style="margin: 0 auto;width: 500px">
+    {% if request.user.is_authenticated %}
+    <h2><a href="{% url 'posts:post_list' %}"> RECIPES </a></h2>
+    <h2><a href="{% url 'posts:post_create' %}"> SHARE </a></h2>
+    <h2><a href="{% url 'users:logout' %}"> LOGOUT </a></h2>
+    {% else %}
+    <h2><a href="{% url 'posts:post_list' %}"> RECIPES </a></h2>
+    <h2><a href="{% url 'users:register' %}"> REGISTER </a></h2>
+    <h2><a href="{% url 'users:login' %}"> LOGIN </a></h2>
+    {% endif %}
+</div>
+<div style="margin: 0 auto;width: 500px">
+{% if form.errors %}
+<h2> ERROR</h2>
+   <b>{{ form.errors}}</b>
+{% endif %}
+    <form action="" method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        {{ field.label_tag }}
+        {{ field }}
+        <br>
+        <br>
+        {% endfor %}
+    <br>
+    <input type="submit" value="Register">
+    </form>
+</div>
+</body>
+</html>
