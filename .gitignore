@@ -3,3 +3,7 @@ db.sqlite3
 users/__pycache__/*
 .idea
 .pyc
+.idea/workspace.xml
+*.pyc
+
+
