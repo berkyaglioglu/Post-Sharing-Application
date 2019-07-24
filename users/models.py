@@ -15,7 +15,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     first_name = models.TextField(max_length=50, blank=False, verbose_name='first name')
     last_name = models.TextField(max_length=50, blank=False, verbose_name='last name')
-    gender = models.TextField(max_length=20, blank=False, default='male', verbose_name='gender')
+
+    GENDER_CHOICES = (('MALE', 'Male'), ('FEMALE', 'Female'))
+    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, default='MALE')
+
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
 
