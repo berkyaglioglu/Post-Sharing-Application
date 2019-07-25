@@ -20,13 +20,14 @@
     {% endif %}
 </div>
 <hr>
-{% for post in post_list %}
 <h2>{{ post.title }}</h2>
+<p> by {{ post.user.first_name }} {{ post.user.last_name }} - {{ post.created_date }} </p>
 <img src="{{ post.img.url }}">
-<p>{{ post.created_date }} </p>
-<p>{{ post.user.first_name }} {{ post.user.last_name }}</p>
-<a href="{% url 'posts:detail' post.pk %}"> DETAILS </a>
-    <hr>
-{% endfor %}
+<h2>Ingredients</h2>
+<p>{{ post.ingredients }}</p>
+<h2>Description</h2>
+<p>{{ post.description }}</p>
+
+
 </body>
 </html>

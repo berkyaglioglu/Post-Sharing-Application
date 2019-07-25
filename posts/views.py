@@ -16,7 +16,9 @@ def post_create(request):
     if request.method == 'POST':
         post_form = PostForm(request.POST, request.FILES)
         if post_form.is_valid():
-            post_form.save(commit=True)
+            post = post_form.save(commit=False)
+            post.user = request.user
+            post.save()
             return HttpResponseRedirect(reverse('posts:post_list'))
     return render(request, 'posts/post_create.html', context={'form': post_form})
 
@@ -24,4 +26,11 @@ def post_create(request):
 def post_list(request):
     post_list = Post.objects.all()
     return render(request, 'posts/post_list.html', context={'post_list': post_list})
+
+
+def post_detail(request, pk):
+    post = Post.objects.get(pk=pk)
+    if request.user.is_authenticated:
+        return render(request, 'posts/detail_user.html', context={'post': post})
+    return render(request, 'posts/detail_anonymous.html', context={'post': post})
 
