@@ -24,7 +24,7 @@
 <h2>{{ post.title }}</h2>
 <img src="{{ post.img.url }}">
 <p>{{ post.created_date }} </p>
-<p>{{ post.user.first_name }} {{ post.user.last_name }}</p>
+<p>{{ post.user.first_name }} {{ post.user.last_name }} - {{ post.likes.count }} likes </p>
 <a href="{% url 'posts:detail' post.pk %}"> DETAILS </a>
     <hr>
 {% endfor %}

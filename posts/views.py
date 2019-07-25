@@ -30,7 +30,21 @@ def post_list(request):
 
 def post_detail(request, pk):
     post = Post.objects.get(pk=pk)
+
     if request.user.is_authenticated:
-        return render(request, 'posts/detail_user.html', context={'post': post})
+        return render(request, 'posts/detail_user.html', context={'post': post, 'user': request.user})
     return render(request, 'posts/detail_anonymous.html', context={'post': post})
+
+
+def handle_like(request, pk):
+    post = Post.objects.get(pk=pk)
+
+    if request.method == 'POST':
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+        else:
+            post.likes.add(request.user)
+
+    return render(request, 'posts/detail_user.html', context={'post': post, 'user': request.user})
+
 

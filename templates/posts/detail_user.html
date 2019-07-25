@@ -28,6 +28,17 @@
 <h2>Description</h2>
 <p>{{ post.description }}</p>
 
+<form action="{% url 'posts:like' post.pk %}" method="post">
+        {% csrf_token %}
+        {% if user in post.likes.all %}
+            <input type="submit" value="UNLIKE ( {{ post.likes.count }} ) ">
+        {% else %}
+            <input type="submit" value="LIKE ( {{ post.likes.count }} ) ">
+        {% endif %}
+
+        <br>
+
+    </form>
 
 </body>
 </html>
