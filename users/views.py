@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponseRedirect
-from .forms import Register, LoginForm
+from .forms import RegisterationForm, LoginForm
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 
@@ -8,7 +8,7 @@ def register(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('posts:post_list'))
 
-    form = Register(request.POST or None)
+    form = RegisterationForm(request.POST or None)
     if form.is_valid():
         user = form.save(commit=False)
         password = form.cleaned_data['password']
@@ -33,7 +33,7 @@ def user_login(request):
             login(request, user)
             return HttpResponseRedirect(reverse('posts:post_list'))
         else:
-            error = 'Username or Password is Wrong!'
+            error = 'Email or Password is Wrong!'
             return render(request, 'users/login.html', context={'form': form, 'error': error})
 
     return render(request, 'users/login.html', context={'form': form})

@@ -20,25 +20,33 @@
     {% endif %}
 </div>
 <hr>
+
+
+
 <h2>{{ post.title }}</h2>
-<p> by {{ post.user.first_name }} {{ post.user.last_name }} - {{ post.created_date }} </p>
-<img src="{{ post.img.url }}">
+<p> by {{ post.owner.first_name }} {{ post.owner.last_name }} - {{ post.date_created }} </p>
+<img src="{{ post.image.url }}">
+
+{% if like %}
+<form action="{% url 'posts:unlike' post.pk %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="UNLIKE ( {{ post.like_set.count }} ) ">
+
+</form>
+{% else %}
+<form action="{% url 'posts:like' post.pk %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="LIKE ( {{ post.like_set.count }} ) ">
+
+</form>
+{% endif %}
+
 <h2>Ingredients</h2>
 <p>{{ post.ingredients }}</p>
 <h2>Description</h2>
 <p>{{ post.description }}</p>
 
-<form action="{% url 'posts:like' post.pk %}" method="post">
-        {% csrf_token %}
-        {% if user in post.likes.all %}
-            <input type="submit" value="UNLIKE ( {{ post.likes.count }} ) ">
-        {% else %}
-            <input type="submit" value="LIKE ( {{ post.likes.count }} ) ">
-        {% endif %}
 
-        <br>
-
-    </form>
 
 </body>
 </html>

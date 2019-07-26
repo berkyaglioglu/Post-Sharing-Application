@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect, reverse
-from .models import Post
+from .models import Post, Like
 from .forms import PostForm
 
 
@@ -17,7 +17,7 @@ def post_create(request):
         post_form = PostForm(request.POST, request.FILES)
         if post_form.is_valid():
             post = post_form.save(commit=False)
-            post.user = request.user
+            post.owner = request.user
             post.save()
             return HttpResponseRedirect(reverse('posts:post_list'))
     return render(request, 'posts/post_create.html', context={'form': post_form})
@@ -30,21 +30,32 @@ def post_list(request):
 
 def post_detail(request, pk):
     post = Post.objects.get(pk=pk)
-
-    if request.user.is_authenticated:
-        return render(request, 'posts/detail_user.html', context={'post': post, 'user': request.user})
-    return render(request, 'posts/detail_anonymous.html', context={'post': post})
+    like = Like.objects.filter(post=post, user=request.user)
+    return render(request, 'posts/post_detail.html', context={'post': post, 'like': like})
 
 
 def handle_like(request, pk):
-    post = Post.objects.get(pk=pk)
+    if request.user.is_authenticated:
+        post = Post.objects.get(pk=pk)
 
-    if request.method == 'POST':
-        if request.user in post.likes.all():
-            post.likes.remove(request.user)
-        else:
-            post.likes.add(request.user)
+        if request.method == 'POST':
+            if not Like.objects.filter(post=post, user=request.user):
+                # user likes the post if he/she hasn't liked it before
+                like = Like(post=post, user=request.user)
+                like.save()
 
-    return render(request, 'posts/detail_user.html', context={'post': post, 'user': request.user})
+    return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 
+
+def handle_unlike(request, pk):
+    if request.user.is_authenticated:
+        post = Post.objects.get(pk=pk)
+
+        if request.method == 'POST':
+            if Like.objects.filter(post=post, user=request.user):
+                # user unlikes the post if he/she has liked it before
+                like = Like.objects.get(post=post, user=request.user)
+                like.delete()
+
+    return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 
