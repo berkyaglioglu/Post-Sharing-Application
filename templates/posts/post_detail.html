@@ -21,6 +21,22 @@
 </div>
 <hr>
 
+{% if post.owner == request.user %}
+<form action="{% url 'posts:edit' post.pk %}" method="post">
+        {% csrf_token %}
+
+    <input type="submit" value="EDIT">
+
+</form>
+<br>
+<form action="{% url 'posts:delete' post.pk %}" method="post">
+        {% csrf_token %}
+
+    <input type="submit" value="DELETE">
+
+</form>
+
+{% endif %}
 
 
 <h2>{{ post.title }}</h2>
@@ -42,7 +58,9 @@
 {% endif %}
 
 <h2>Ingredients</h2>
-<p>{{ post.ingredients }}</p>
+{% for ingredient in post.ingredients.all %}
+    <p>{{ ingredient.name }}</p>
+{% endfor %}
 <h2>Description</h2>
 <p>{{ post.description }}</p>
 

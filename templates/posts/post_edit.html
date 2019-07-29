@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 {% load static %}
-
 <html lang="en">
 <head>
     <link rel="stylesheet" href="{% static 'css/global.css'%}" type="text/css">
     <meta charset="UTF-8">
-    <title>Recipes</title>
+    <title>Share Recipe</title>
 </head>
 <body>
 <div style="margin: 0 auto;width: 500px">
@@ -19,23 +18,20 @@
     <h2><a href="{% url 'users:login' %}"> LOGIN </a></h2>
     {% endif %}
 </div>
-<hr>
+{% if form.errors %}
+    {{ form.errors}}
+{% endif %}
 <div style="margin: 0 auto;width: 500px">
-    <h3>Top Used Ingredients</h3>
-    {% for ingredient in ingredients %}
-    <p> <a href="{% url 'posts:post_list' ingredient.pk %}"> {{ ingredient.name }} ( {{ingredient.post_set.count}} ) </a> </p>
+<form action="{% url 'posts:update' pk %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+    {{ field.label_tag }}
+    {{ field }}
+    <br>
+    <br>
     {% endfor %}
+    <input type="submit" value="UPDATE">
+</form>
 </div>
-<hr>
-
-
-{% for post in post_list %}
-<h2>{{ post.title }}</h2>
-<img src="{{ post.image.url }}">
-<p>{{ post.date_created }} </p>
-<p>{{ post.owner.first_name }} {{ post.owner.last_name }} - {{ post.like_set.all.count }} likes </p>
-<a href="{% url 'posts:detail' post.pk %}"> DETAILS </a>
-    <hr>
-{% endfor %}
 </body>
 </html>
