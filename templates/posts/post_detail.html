@@ -64,7 +64,13 @@
 <h2>Description</h2>
 <p>{{ post.description }}</p>
 
-
+<form action="{% url 'posts:rate' post.pk %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in rate_form %}
+    {{ field }}
+    {% endfor %}
+    <input type="submit" value="Rate">
+</form>
 
 </body>
 </html>

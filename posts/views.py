@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect, reverse
-from .models import Post, Like, Ingredients
-from .forms import PostForm
+from .models import Post, Like, Ingredients, Rate
+from .forms import PostForm, RateForm
 import operator
 
 
@@ -45,16 +45,33 @@ def post_list(request, pk=None):
     for ingredient in sorted_ingredient_counts:
         ingredients_list.append(Ingredients.objects.get(name=ingredient[0]))
 
+    for post in post_list:
+        num = 0
+        for rate in post.rate_set.all():
+            num += rate.rating
+        if post.rate_set.all():
+            average = num / post.rate_set.all().count()
+            post.rating = average
+        else:
+            post.rating = 0
+        post.save()
+
     return render(request, 'posts/post_list.html', context={'post_list': post_list, 'ingredients': ingredients_list})
 
 
 def post_detail(request, pk):
     post = Post.objects.get(pk=pk)
+    rate_form = RateForm()
+
     if request.user.is_authenticated:
         like = Like.objects.filter(post=post, user=request.user)
+        if Rate.objects.filter(post=post, user=request.user):
+            rate = Rate.objects.get(post=post, user=request.user)
+            rate_form = RateForm(instance=rate)
     else:
         like = None
-    return render(request, 'posts/post_detail.html', context={'post': post, 'like': like})
+
+    return render(request, 'posts/post_detail.html', context={'post': post, 'like': like, 'rate_form': rate_form})
 
 
 def post_edit(request, pk):
@@ -122,6 +139,28 @@ def handle_unlike(request, pk):
                 # user unlikes the post if he/she has liked it before
                 like = Like.objects.get(post=post, user=request.user)
                 like.delete()
+
+    return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
+
+
+def handle_rate(request, pk):
+    if request.user.is_authenticated:
+        post = Post.objects.get(pk=pk)
+
+        if request.method == 'POST':
+            if Rate.objects.filter(post=post, user=request.user):
+                rate = Rate.objects.get(post=post, user=request.user)
+                form = RateForm(data=request.POST, instance=rate)
+
+                if form.is_valid():
+                    form.save(commit=True)
+            else:
+                form = RateForm(request.POST, request.FILES)
+                if form.is_valid():
+                    rate = form.save(commit=False)
+                    rate.user = request.user
+                    rate.post = post
+                    rate.save()
 
     return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 

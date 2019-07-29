@@ -24,6 +24,8 @@ class Post(models.Model):
     # picked_ingredients
     ingredients = models.ManyToManyField(Ingredients)
     choices = MultiSelectField(choices=INGREDIENT_CHOICES, max_length=1000, blank=True)
+
+    rating = models.FloatField(max_length=10, default=0)
     title = models.CharField(max_length=120, blank=False, verbose_name='Title')
     description = models.TextField(max_length=1200, blank=False, verbose_name='Description')
     image = models.ImageField(upload_to='images/', verbose_name='Image')
@@ -45,6 +47,13 @@ class Like(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
 
 
+class Rate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
+    RATINGS = ((1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5'))
+    rating = models.IntegerField(max_length=1, choices=RATINGS, default=5)
 
+    date_rated = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 

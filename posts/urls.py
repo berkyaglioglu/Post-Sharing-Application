@@ -13,4 +13,5 @@ urlpatterns=[
     path('edit/<int:pk>/', view=views.post_edit, name='edit'),
     path('update/<int:pk>/', view=views.update, name='update'),
     path('delete/<int:pk>/', view=views.delete, name='delete'),
+    path('rate/<int:pk>/', view=views.handle_rate, name='rate'),
 ]
