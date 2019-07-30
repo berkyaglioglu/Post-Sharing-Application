@@ -7,25 +7,15 @@ from multiselectfield import MultiSelectField
 class Ingredients(models.Model):
     name = models.CharField(max_length=120, blank=False)
 
+    def __str__(self):
+        return self.name
+
 
 class Post(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    INGREDIENT_CHOICES = (
-        ('tomato', 'Tomato'),
-        ('eggplant', 'Eggplant'),
-        ('celery', 'Celery'),
-        ('egg', 'Egg'),
-        ('milk', 'Milk'),
-        ('fish', 'Fish'),
-        ('chicken', 'Chicken'),
-        ('oil', 'Oil')
-    )
-    # picked_ingredients
-    ingredients = models.ManyToManyField(Ingredients)
-    choices = MultiSelectField(choices=INGREDIENT_CHOICES, max_length=1000, blank=True)
+    ingredients = models.ManyToManyField(Ingredients, related_name='posts')
 
-    rating = models.FloatField(max_length=10, default=0)
     title = models.CharField(max_length=120, blank=False, verbose_name='Title')
     description = models.TextField(max_length=1200, blank=False, verbose_name='Description')
     image = models.ImageField(upload_to='images/', verbose_name='Image')
@@ -51,8 +41,8 @@ class Rate(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
-    RATINGS = ((1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5'))
-    rating = models.IntegerField(max_length=1, choices=RATINGS, default=5)
+    RATINGS_CHOICES = ((1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5'))
+    score = models.IntegerField(max_length=1, choices=RATINGS_CHOICES)
 
     date_rated = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)

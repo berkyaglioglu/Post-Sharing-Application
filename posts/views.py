@@ -1,17 +1,17 @@
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect, reverse
 from .models import Post, Like, Ingredients, Rate
 from .forms import PostForm, RateForm
-import operator
+from django.db.models import Count, Avg
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 
 
 def index(request):
     return render(request, 'posts/index.html')
 
 
+@login_required(redirect_field_name='/posts/')
 def post_create(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('posts:post_list'))
-
     post_form = PostForm()
 
     if request.method == 'POST':
@@ -20,43 +20,21 @@ def post_create(request):
             post = post_form.save(commit=False)
             post.owner = request.user
             post.save()
-            for choice in post.choices:
-                if not Ingredients.objects.filter(name=choice):
-                    ingredient = Ingredients(name=choice)
-                    ingredient.save()
-                post.ingredients.add(Ingredients.objects.get(name=choice))
+            post.ingredients.set(post_form.cleaned_data['ingredients'])
             return HttpResponseRedirect(reverse('posts:post_list'))
     return render(request, 'posts/post_create.html', context={'form': post_form})
 
 
-def post_list(request, pk=None):
-    if pk is None:
-        post_list = Post.objects.all()
+def post_list(request):
+    if request.GET.get('ingredient', None) is None:
+        post_list = Post.objects.annotate(avg_rating=Avg('rate__score'))
     else:
-        ingredient = Ingredients.objects.get(pk=pk)
-        post_list = ingredient.post_set.all()
+        ingredient = Ingredients.objects.get(pk=request.GET.get('ingredient'))
+        post_list = ingredient.posts.annotate(avg_rating=Avg('rate__score'))
 
-    ingredient_counts = {}
-    for ingredient in Ingredients.objects.all():
-        ingredient_counts[ingredient.name] = ingredient.post_set.count()
-    sorted_ingredient_counts = sorted(ingredient_counts.items(), key=operator.itemgetter(1))
-    sorted_ingredient_counts.reverse()
-    ingredients_list = []
-    for ingredient in sorted_ingredient_counts:
-        ingredients_list.append(Ingredients.objects.get(name=ingredient[0]))
+    ingredients = Ingredients.objects.annotate(num_posts=Count('posts')).order_by('-num_posts')[:5]
 
-    for post in post_list:
-        num = 0
-        for rate in post.rate_set.all():
-            num += rate.rating
-        if post.rate_set.all():
-            average = num / post.rate_set.all().count()
-            post.rating = average
-        else:
-            post.rating = 0
-        post.save()
-
-    return render(request, 'posts/post_list.html', context={'post_list': post_list, 'ingredients': ingredients_list})
+    return render(request, 'posts/post_list.html', context={'post_list': post_list, 'ingredients': ingredients})
 
 
 def post_detail(request, pk):
@@ -74,45 +52,46 @@ def post_detail(request, pk):
     return render(request, 'posts/post_detail.html', context={'post': post, 'like': like, 'rate_form': rate_form})
 
 
+@login_required(redirect_field_name='/posts/')
 def post_edit(request, pk):
-    if request.user.is_authenticated and request.method == 'POST':
+    if request.method == 'POST':
         post = Post.objects.get(pk=pk)
         if post.owner == request.user:
             post_form = PostForm(instance=post)
             return render(request, 'posts/post_edit.html', context={'form': post_form, 'pk': pk})
+        else:
+            raise PermissionDenied
     return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 
 
+@login_required(redirect_field_name='/posts/')
 def update(request, pk):
-    if request.user.is_authenticated and request.method == 'POST':
+    if request.method == 'POST':
         post = Post.objects.get(pk=pk)
 
         if post.owner == request.user:
             form = PostForm(data=request.POST, instance=post)
 
             if form.is_valid():
-                post_updated = form.save(commit=True)
-                post_updated.ingredients.clear()
-
-                for choice in post_updated.choices:
-                    if not Ingredients.objects.filter(name=choice):
-                        ingredient = Ingredients(name=choice)
-                        ingredient.save()
-                    post.ingredients.add(Ingredients.objects.get(name=choice))
-
+                form.save(commit=True)
                 return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 
             return render(request, 'posts/post_edit.html', context={'form': form, 'pk': pk})
+        else:
+            raise PermissionDenied
 
     return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 
 
+@login_required(redirect_field_name='/posts/')
 def delete(request, pk):
-    if request.user.is_authenticated and request.method == 'POST':
+    if request.method == 'POST':
         post = Post.objects.get(pk=pk)
 
         if post.owner == request.user:
             post.delete()
+        else:
+            raise PermissionDenied
 
     return HttpResponseRedirect(reverse('posts:post_list'))
 
