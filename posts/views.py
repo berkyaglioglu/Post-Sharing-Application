@@ -27,14 +27,14 @@ def post_create(request):
 
 def post_list(request):
     if request.GET.get('ingredient', None) is None:
-        post_list = Post.objects.annotate(avg_rating=Avg('rate__score'))
+        posts = Post.objects.annotate(avg_rating=Avg('rate__score'))
     else:
         ingredient = Ingredients.objects.get(pk=request.GET.get('ingredient'))
-        post_list = ingredient.posts.annotate(avg_rating=Avg('rate__score'))
+        posts = ingredient.posts.annotate(avg_rating=Avg('rate__score'))
 
     ingredients = Ingredients.objects.annotate(num_posts=Count('posts')).order_by('-num_posts')[:5]
 
-    return render(request, 'posts/post_list.html', context={'post_list': post_list, 'ingredients': ingredients})
+    return render(request, 'posts/post_list.html', context={'posts': posts, 'ingredients': ingredients})
 
 
 def post_detail(request, pk):
