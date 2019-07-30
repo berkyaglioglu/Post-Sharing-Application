@@ -1,6 +1,5 @@
 from django.db import models
 from users.models import User
-from multiselectfield import MultiSelectField
 # Create your models here.
 
 
