@@ -14,9 +14,6 @@ class PostForm(forms.ModelForm):
 
 
 class RateForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(RateForm, self).__init__(*args, **kwargs)
-
     class Meta:
         model = Rate
         fields = ['score']
