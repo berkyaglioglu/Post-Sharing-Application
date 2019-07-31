@@ -63,12 +63,25 @@ def post_detail(request, pk):
 def post_edit(request, pk):
     if request.method == 'POST':
         post = Post.objects.get(pk=pk)
+
         if post.owner == request.user:
-            post_form = PostForm(instance=post)
-            return render(request, 'posts/post_edit.html', context={'form': post_form, 'pk': pk})
+            form = PostForm(data=request.POST, files=request.FILES, instance=post)
+
+            if form.is_valid():
+                form.save(commit=True)
+                return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
+
+            return render(request, 'posts/post_edit.html', context={'form': form, 'pk': pk})
         else:
             raise PermissionDenied
-    return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
+    else:
+        if Post.objects.filter(pk=pk).exists():
+            post = Post.objects.get(pk=pk)
+
+            if post.owner == request.user:
+                post_form = PostForm(instance=post)
+                return render(request, 'posts/post_edit.html', context={'form': post_form, 'pk': pk})
+        raise PermissionDenied
 
 
 @login_required(login_url='/posts/')
@@ -84,26 +97,7 @@ def post_delete(request, pk):
     return HttpResponseRedirect(reverse('posts:post_list'))
 
 
-@login_required(login_url='/posts/')
-def handle_update(request, pk):
-    if request.method == 'POST':
-        post = Post.objects.get(pk=pk)
-
-        if post.owner == request.user:
-            form = PostForm(data=request.POST, files=request.FILES, instance=post)
-
-            if form.is_valid():
-                form.save(commit=True)
-                return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
-
-            return render(request, 'posts/post_edit.html', context={'form': form, 'pk': pk})
-        else:
-            raise PermissionDenied
-
-    return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
-
-
-def handle_like(request, pk):
+def post_like(request, pk):
     if request.user.is_authenticated and request.method == 'POST':
         post = Post.objects.get(pk=pk)
 
@@ -115,7 +109,7 @@ def handle_like(request, pk):
     return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 
 
-def handle_unlike(request, pk):
+def post_unlike(request, pk):
     if request.user.is_authenticated and request.method == 'POST':
         post = Post.objects.get(pk=pk)
 
@@ -127,7 +121,7 @@ def handle_unlike(request, pk):
     return HttpResponseRedirect(reverse('posts:detail', kwargs={'pk': pk}))
 
 
-def handle_rate(request, pk):
+def post_rate(request, pk):
     if request.user.is_authenticated and request.method == 'POST':
         post = Post.objects.get(pk=pk)
 

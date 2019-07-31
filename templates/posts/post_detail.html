@@ -22,7 +22,7 @@
 <hr>
 
 {% if post.owner == request.user %}
-<form action="{% url 'posts:edit' post.pk %}" method="post">
+<form action="{% url 'posts:edit' post.pk %}" method="get">
         {% csrf_token %}
 
     <input type="submit" value="EDIT">
