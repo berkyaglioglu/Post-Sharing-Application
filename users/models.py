@@ -13,8 +13,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         unique=True,
     )
 
-    first_name = models.TextField(max_length=50, blank=False, verbose_name='first name')
-    last_name = models.TextField(max_length=50, blank=False, verbose_name='last name')
+    first_name = models.CharField(max_length=50, blank=False, verbose_name='first name')
+    last_name = models.CharField(max_length=50, blank=False, verbose_name='last name')
 
     GENDER_CHOICES = (('MALE', 'Male'), ('FEMALE', 'Female'))
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, default='MALE')

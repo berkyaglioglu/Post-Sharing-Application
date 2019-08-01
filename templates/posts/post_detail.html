@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/global.css'%}" type="text/css">
+    <meta charset="UTF-8">
+    <title>Recipes</title>
+</head>
+<body>
+<div style="margin: 0 auto;width: 500px">
+    {% if request.user.is_authenticated %}
+    <h2><a href="{% url 'posts:post_list' %}"> RECIPES </a></h2>
+    <h2><a href="{% url 'posts:post_create' %}"> SHARE </a></h2>
+    <h2><a href="{% url 'users:logout' %}"> LOGOUT </a></h2>
+    {% else %}
+    <h2><a href="{% url 'posts:post_list' %}"> RECIPES </a></h2>
+    <h2><a href="{% url 'users:register' %}"> REGISTER </a></h2>
+    <h2><a href="{% url 'users:login' %}"> LOGIN </a></h2>
+    {% endif %}
+</div>
+<hr>
+
+{% if post.owner == request.user %}
+<form action="{% url 'posts:edit' post.pk %}" method="get">
+        {% csrf_token %}
+
+    <input type="submit" value="EDIT">
+
+</form>
+<br>
+<form action="{% url 'posts:delete' post.pk %}" method="post">
+        {% csrf_token %}
+
+    <input type="submit" value="DELETE">
+
+</form>
+
+{% endif %}
+
+
+<h2>{{ post.title }}</h2>
+<p> by {{ post.owner.first_name }} {{ post.owner.last_name }} - {{ post.date_created }} </p>
+<img src="{{ post.image.url }}">
+
+{% if like %}
+<form action="{% url 'posts:unlike' post.pk %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="UNLIKE ( {{ post.like_set.count }} ) ">
+
+</form>
+{% else %}
+<form action="{% url 'posts:like' post.pk %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="LIKE ( {{ post.like_set.count }} ) ">
+
+</form>
+{% endif %}
+
+<h2>Ingredients</h2>
+{% for ingredient in post.ingredients.all %}
+    <p>{{ ingredient.name }}</p>
+{% endfor %}
+<h2>Description</h2>
+<p>{{ post.description }}</p>
+
+<form action="{% url 'posts:rate' post.pk %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in rate_form %}
+    {{ field }}
+    {% endfor %}
+    <input type="submit" value="Rate">
+</form>
+
+</body>
+</html>

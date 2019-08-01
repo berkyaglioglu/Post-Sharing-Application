@@ -5,5 +5,7 @@ users/__pycache__/*
 .pyc
 .idea/workspace.xml
 *.pyc
+myvenv/*
+media/*
 
 
